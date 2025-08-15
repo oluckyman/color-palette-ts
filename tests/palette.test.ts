@@ -37,4 +37,17 @@ describe("createPalette", () => {
     type OutExpect = { [K in keyof InputModel]: ColorData & { background: string } };
     expectTypeOf(out).toEqualTypeOf<OutExpect>();
   });
+
+  it("adds color_toneName keys with tone result", () => {
+    const brightness = createTone((d: ColorData) => ({ foreground: d.main }), { name: "brightness" });
+    const out = createPalette(input, { tones: { brightness } });
+
+    expect(out.blue_brightness).toEqual({ foreground: "blue" });
+    expect(out.red_brightness).toEqual({ foreground: "red" });
+    expectTypeOf(out.blue_brightness).toEqualTypeOf<ReturnType<typeof brightness>>();
+    expectTypeOf(out.red_brightness).toEqualTypeOf<ReturnType<typeof brightness>>();
+
+    expect(out.blue).toEqual(input.blue);
+    expectTypeOf(out.blue).toEqualTypeOf<ColorData>();
+  });
 });
