@@ -13,20 +13,30 @@ type Tone<TOut, TName extends string, TSubtone extends SubtoneMap> = ((data: Col
 
 export function createTone<TOut, TName extends string, TSubtone extends SubtoneMap>(
   fn: (data: ColorData) => TOut,
-  opts?: {
+  options?: {
     name?: TName;
     subtone?: SubtoneDef<TSubtone>;
   },
 ): Tone<TOut, TName, TSubtone> {
   const tone = ((data: ColorData) => fn(data)) as Tone<TOut, TName, TSubtone>;
-  if (opts?.name) tone.toneName = opts.name;
-  if (opts?.subtone) tone.subtone = opts.subtone;
+  if (options?.name) tone.toneName = options.name;
+  if (options?.subtone) tone.subtone = options.subtone;
 
   return tone;
 }
 
-export function createPalette(input: InputModel) {
-  const out = {} as InputModel;
-  for (const key in input) out[key as keyof InputModel] = { ...input[key as keyof InputModel] };
+export function createPalette(input: InputModel): InputModel;
+export function createPalette<TBase extends (data: ColorData) => Record<string, unknown>>(
+  input: InputModel,
+  options: { base: TBase },
+): { [K in keyof InputModel]: InputModel[K] & ReturnType<TBase> };
+
+export function createPalette(input: InputModel, options?: { base?: (data: ColorData) => Record<string, unknown> }) {
+  const out: Record<string, ColorData> = {};
+  for (const key in input) {
+    const k = key as keyof InputModel;
+    const base = options?.base?.(input[k]);
+    out[k] = { ...input[k], ...base };
+  }
   return out;
 }
