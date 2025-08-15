@@ -1,4 +1,4 @@
-import type { ColorData } from "./types";
+import type { ColorData, InputModel } from "./types";
 export type { ColorsUnion, ColorData, InputModel } from "./types";
 
 type SubtoneMap = Record<string, (data: ColorData) => unknown>;
@@ -23,4 +23,10 @@ export function createTone<TOut, TName extends string, TSubtone extends SubtoneM
   if (opts?.subtone) tone.subtone = opts.subtone;
 
   return tone;
+}
+
+export function createPalette(input: InputModel) {
+  const out = {} as InputModel;
+  for (const key in input) out[key as keyof InputModel] = { ...input[key as keyof InputModel] };
+  return out;
 }
