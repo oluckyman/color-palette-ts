@@ -1,7 +1,7 @@
 import { createTone } from "../src/index";
 import type { ColorData } from "../src/types";
 
-describe("createTone (runtime)", () => {
+describe("createTone", () => {
   it("returns a callable that applies fn(data)", () => {
     const sample: ColorData = {
       main: "blue",
@@ -15,12 +15,17 @@ describe("createTone (runtime)", () => {
       color: data.main,
     }));
 
+    expectTypeOf(tone).parameter(0).toEqualTypeOf<ColorData>();
+    expectTypeOf(tone).returns.toEqualTypeOf<{ background: string; color: string }>();
+
     const result = tone(sample);
 
-    expect(result).toEqual({
-      background: "blue",
-      color: "blue",
-    });
+    expect(result).toEqual({ background: "blue", color: "blue" });
+    expectTypeOf(result).toEqualTypeOf<{ background: string; color: string }>();
+
+    // optional metadata currently present on tone
+    expectTypeOf(tone.toneName).toEqualTypeOf<string | undefined>();
+    expectTypeOf(tone.subtone).toEqualTypeOf<Record<string, (data: ColorData) => unknown> | undefined>();
   });
 
   it("attaches .name when options.name is provided", () => {
@@ -28,6 +33,7 @@ describe("createTone (runtime)", () => {
 
     expect(typeof tone).toBe("function");
     expect(tone.toneName).toBe("brightness");
+    expectTypeOf(tone.toneName).toEqualTypeOf<"brightness" | undefined>();
   });
 
   it("exposes subtone variants as callables", () => {
@@ -49,14 +55,8 @@ describe("createTone (runtime)", () => {
     );
 
     expect(tone.subtone).toBeTruthy();
-    expect(tone.subtone!["low"](sample)).toEqual({ light: "blue" });
-  });
-});
+    expect(tone.subtone!.low(sample)).toEqual({ light: "blue" });
 
-describe("createTone (types)", () => {
-  it("preserves literal type of tone name", () => {
-    const tone = createTone((d: ColorData) => ({ background: d.main }), { name: "brightness" });
-
-    expectTypeOf(tone.toneName).toEqualTypeOf<"brightness" | undefined>();
+    expectTypeOf(tone.subtone!.low).parameter(0).toEqualTypeOf<ColorData>();
   });
 });
