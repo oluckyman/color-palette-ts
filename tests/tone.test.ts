@@ -29,4 +29,26 @@ describe("createTone", () => {
     expect(typeof tone).toBe("function");
     expect(tone.toneName).toBe("brightness");
   });
+
+  it("exposes subtone variants as callables", () => {
+    const sample: ColorData = {
+      main: "blue",
+      dark: "darkblue",
+      light: "lightblue",
+      extra: "extrablue",
+    };
+
+    const tone = createTone(
+      (data) => ({
+        foreground: data.main,
+      }),
+      {
+        name: "brightness",
+        subtone: { low: (data) => ({ light: data.main }) },
+      },
+    );
+
+    expect(tone.subtone).toBeTruthy();
+    expect(tone.subtone!["low"](sample)).toEqual({ light: "blue" });
+  });
 });
