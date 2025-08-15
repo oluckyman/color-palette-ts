@@ -62,4 +62,33 @@ describe("createPalette", () => {
     expectTypeOf<HasKey<Out, "red_darkness">>().toEqualTypeOf<true>();
     expectTypeOf<HasKey<Out, "red_brightness">>().toEqualTypeOf<false>();
   });
+
+  it("uses tone.toneName for both tone and subtone keys", () => {
+    const depth = createTone((d: ColorData) => ({ background: d.light, foreground: d.main, color: d.extra }), {
+      name: "depth",
+      subtone: {
+        "8-bit": (d) => ({ borderColor: d.main }),
+        "24-bit": (d) => ({ extraColor: d.extra }),
+      },
+    });
+
+    const out = createPalette(input, { tones: { depth } });
+
+    expect(out.blue_depth).toEqual({
+      background: "lightblue",
+      foreground: "blue",
+      color: "extrablue",
+    });
+    expectTypeOf(out.blue_depth).toEqualTypeOf<ReturnType<typeof depth>>();
+
+    expect(out["blue_8-bit_depth"]).toEqual({ borderColor: "blue" });
+    expect(out["blue_24-bit_depth"]).toEqual({ extraColor: "extrablue" });
+
+    if (depth.subtone) {
+      type Out8 = ReturnType<(typeof depth.subtone)["8-bit"]>;
+      expectTypeOf(out["blue_8-bit_depth"]).toEqualTypeOf<Out8>();
+      type Out24 = ReturnType<(typeof depth.subtone)["24-bit"]>;
+      expectTypeOf(out["blue_24-bit_depth"]).toEqualTypeOf<Out24>();
+    }
+  });
 });
