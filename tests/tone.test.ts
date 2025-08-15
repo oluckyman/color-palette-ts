@@ -1,7 +1,7 @@
 import { createTone } from "../src/index";
 import type { ColorData } from "../src/types";
 
-describe("createTone (runtime)", () => {
+describe("createTone", () => {
   it("returns a callable that applies fn(data)", () => {
     const sample: ColorData = {
       main: "blue",
@@ -21,5 +21,12 @@ describe("createTone (runtime)", () => {
       background: "blue",
       color: "blue",
     });
+  });
+
+  it("attaches .name when options.name is provided", () => {
+    const tone = createTone((data: ColorData) => ({ background: data.main }), { name: "brightness" });
+
+    expect(typeof tone).toBe("function");
+    expect(tone.toneName).toBe("brightness");
   });
 });
