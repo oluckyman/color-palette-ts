@@ -77,6 +77,11 @@ export function createPalette<TTones extends Record<string, Tone>>(
   options: { tones: TTones },
 ): Palette<TTones>;
 
+export function createPalette<TBase extends ToneFn, TTones extends Record<string, Tone>>(
+  input: InputModel,
+  options: { base: TBase; tones: TTones },
+): { [K in keyof InputModel]: InputModel[K] & ReturnType<TBase> } & Palette<TTones>;
+
 export function createPalette(input: InputModel, options?: { base?: ToneFn; tones?: Record<string, Tone> }) {
   const out: ToneOutput = {};
   for (const key in input) {
