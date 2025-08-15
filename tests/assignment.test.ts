@@ -1,5 +1,5 @@
 import { createPalette, createTone } from "../src/index";
-import type { InputModel, ColorData } from "../src/types";
+import type { InputModel } from "../src/types";
 
 describe("ACCEPTANCE SNAPSHOT — matches the spec Output", () => {
   it("reproduces the expected object for input + base + brightness + depth(+subtones)", () => {
@@ -57,10 +57,31 @@ describe("ACCEPTANCE SNAPSHOT — matches the spec Output", () => {
     // === SNAPSHOT (must match the spec exactly) ===
     expect(out).toEqual({
       red: { main: "red", dark: "darkred", light: "lightred", extra: "extrared", background: "red", color: "red" },
-      green: { main: "green", dark: "darkgreen", light: "lightgreen", extra: "extragreen", background: "green", color: "green", },
-      blue: { main: "blue", dark: "darkblue", light: "lightblue", extra: "extrablue", background: "blue", color: "blue", },
-      yellow: { main: "yellow", dark: "darkyellow", light: "lightyellow", extra: "extrayellow", background: "yellow", color: "yellow", },
-      
+      green: {
+        main: "green",
+        dark: "darkgreen",
+        light: "lightgreen",
+        extra: "extragreen",
+        background: "green",
+        color: "green",
+      },
+      blue: {
+        main: "blue",
+        dark: "darkblue",
+        light: "lightblue",
+        extra: "extrablue",
+        background: "blue",
+        color: "blue",
+      },
+      yellow: {
+        main: "yellow",
+        dark: "darkyellow",
+        light: "lightyellow",
+        extra: "extrayellow",
+        background: "yellow",
+        color: "yellow",
+      },
+
       red_brightness: { foreground: "red", customProp: "#f0f0f0" },
       red_low_brightness: { white: "lightred" },
       red_medium_brightness: { shadow: "red" },
