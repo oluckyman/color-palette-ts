@@ -1,6 +1,18 @@
 import type { ColorData, InputModel } from "./types";
 export type { ColorsUnion, ColorData, InputModel } from "./types";
 
+// helpers
+//
+type NameOf<T> = T extends { toneName?: infer N } ? Extract<N, string> : never;
+// If tone has a specific name, use it; if it's missing, fall back to the map key K
+type EffectiveName<TTone, K extends string> = [NameOf<TTone>] extends [never] // no toneName property or undefined in type
+  ? K
+  : string extends NameOf<TTone> // toneName is the broad `string`
+    ? K
+    : NameOf<TTone>;
+// union -> intersection utility
+type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (x: infer I) => void ? I : never;
+
 // Domain alias: what a tone/subtone returns (derived props for a single color).
 type ToneOutput = Record<string, unknown>;
 // Transformer from one ColorData to some derived props.
@@ -8,7 +20,11 @@ type ToneFn<TOut extends ToneOutput = ToneOutput> = (data: ColorData) => TOut;
 
 type SubtoneMap = Record<string, ToneFn>;
 
-type Tone<TOut extends ToneOutput, TName extends string, TSubtone extends SubtoneMap> = ToneFn<TOut> & {
+type Tone<
+  TOut extends ToneOutput = ToneOutput,
+  TName extends string = string,
+  TSubtone extends SubtoneMap = SubtoneMap,
+> = ToneFn<TOut> & {
   toneName?: TName;
   subtone?: TSubtone;
 };
@@ -27,20 +43,27 @@ export function createTone<TOut extends ToneOutput, TName extends string, TSubto
 }
 
 export function createPalette(input: InputModel): InputModel;
+
 export function createPalette<TBase extends ToneFn>(
   input: InputModel,
   options: { base: TBase },
 ): { [K in keyof InputModel]: InputModel[K] & ReturnType<TBase> };
 
-export function createPalette<TTones extends Record<string, ToneFn>>(
+export function createPalette<TTones extends Record<string, Tone>>(
   input: InputModel,
   options: { tones: TTones },
-): InputModel & {
-  [K in `${keyof InputModel}_${Extract<keyof TTones, string>}`]: ReturnType<TTones[Extract<keyof TTones, string>]>;
-};
+): InputModel &
+  UnionToIntersection<
+    {
+      [C in keyof InputModel]: {
+        // if value.toneName is a literal -> use it; else use the map key K
+        [K in Extract<keyof TTones, string> as `${C}_${EffectiveName<TTones[K], K>}`]: ReturnType<TTones[K]>;
+      };
+    }[keyof InputModel]
+  >;
 
-export function createPalette(input: InputModel, options?: { base?: ToneFn; tones?: Record<string, ToneFn> }) {
-  const out: Record<string, unknown> = {};
+export function createPalette(input: InputModel, options?: { base?: ToneFn; tones?: Record<string, Tone> }) {
+  const out: ToneOutput = {};
   for (const key in input) {
     const k = key as keyof InputModel;
     const base = options?.base?.(input[k]);
@@ -49,7 +72,8 @@ export function createPalette(input: InputModel, options?: { base?: ToneFn; tone
     if (options?.tones)
       for (const toneKey in options?.tones ?? {}) {
         const toneFn = options.tones[toneKey];
-        out[`${key}_${toneKey}`] = toneFn(input[k]);
+        const name = toneFn.toneName ?? toneKey;
+        out[`${key}_${name}`] = toneFn(input[k]);
       }
   }
   return out;

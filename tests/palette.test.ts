@@ -43,11 +43,23 @@ describe("createPalette", () => {
     const out = createPalette(input, { tones: { brightness } });
 
     expect(out.blue_brightness).toEqual({ foreground: "blue" });
-    expect(out.red_brightness).toEqual({ foreground: "red" });
     expectTypeOf(out.blue_brightness).toEqualTypeOf<ReturnType<typeof brightness>>();
-    expectTypeOf(out.red_brightness).toEqualTypeOf<ReturnType<typeof brightness>>();
 
     expect(out.blue).toEqual(input.blue);
     expectTypeOf(out.blue).toEqualTypeOf<ColorData>();
+  });
+
+  it("uses tone key as tone name, when there is no tone name provided", () => {
+    const brightness = createTone((d: ColorData) => ({ foreground: d.main }));
+    const out = createPalette(input, { tones: { darkness: brightness } });
+
+    expect(out.blue_darkness).toEqual({ foreground: "blue" });
+    expectTypeOf(out.blue_darkness).toEqualTypeOf<ReturnType<typeof brightness>>();
+    // Test that type of out has no keys matching `red_*` except `red_darkness`
+    type Out = typeof out;
+    type HasKey<T, K extends PropertyKey> = K extends keyof T ? true : false;
+
+    expectTypeOf<HasKey<Out, "red_darkness">>().toEqualTypeOf<true>();
+    expectTypeOf<HasKey<Out, "red_brightness">>().toEqualTypeOf<false>();
   });
 });

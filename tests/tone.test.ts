@@ -23,9 +23,8 @@ describe("createTone", () => {
     expect(result).toEqual({ background: "blue", color: "blue" });
     expectTypeOf(result).toEqualTypeOf<{ background: string; color: string }>();
 
-    // optional metadata currently present on tone
-    expectTypeOf(tone.toneName).toEqualTypeOf<string | undefined>();
-    expectTypeOf(tone.subtone).toEqualTypeOf<Record<string, (data: ColorData) => unknown> | undefined>();
+    expect(tone.toneName).toBeUndefined();
+    expect(tone.subtone).toBeUndefined();
   });
 
   it("attaches .name when options.name is provided", () => {
