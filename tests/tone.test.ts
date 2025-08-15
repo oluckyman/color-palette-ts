@@ -1,7 +1,7 @@
 import { createTone } from "../src/index";
 import type { ColorData } from "../src/types";
 
-describe("createTone", () => {
+describe("createTone (runtime)", () => {
   it("returns a callable that applies fn(data)", () => {
     const sample: ColorData = {
       main: "blue",
@@ -50,5 +50,13 @@ describe("createTone", () => {
 
     expect(tone.subtone).toBeTruthy();
     expect(tone.subtone!["low"](sample)).toEqual({ light: "blue" });
+  });
+});
+
+describe("createTone (types)", () => {
+  it("preserves literal type of tone name", () => {
+    const tone = createTone((d: ColorData) => ({ background: d.main }), { name: "brightness" });
+
+    expectTypeOf(tone.toneName).toEqualTypeOf<"brightness" | undefined>();
   });
 });
